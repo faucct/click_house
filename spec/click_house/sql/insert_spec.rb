@@ -1,4 +1,6 @@
-RSpec.describe ClickHouse::SQL do
+# frozen_string_literal: true
+
+RSpec.describe ClickHouse::SQL::Insert do
   describe '.insert' do
     let(:http_interface) { ClickHouse::HTTPInterface.new }
 
@@ -11,7 +13,7 @@ RSpec.describe ClickHouse::SQL do
       shared_examples 'it gets inserted' do |as:|
         it do
           expect do
-            http_interface.post query: described_class.insert(into: :foo, rows: [[value]])
+            http_interface.post query: described_class.call(into: :foo, rows: [[value]])
           end.to change { http_interface.get(query: 'SELECT * FROM foo').chomp("\n") }.to(as)
         end
       end

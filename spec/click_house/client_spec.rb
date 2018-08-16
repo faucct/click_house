@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe ClickHouse::Client do
   let(:client) { described_class.new(http_interface: http_interface) }
   let(:http_interface) { ClickHouse::HTTPInterface.new }
@@ -11,7 +13,7 @@ RSpec.describe ClickHouse::Client do
       after { http_interface.post query: 'DROP TABLE foo' }
 
       shared_examples 'it selects' do |value:|
-        it { expect(client.select_rows(expressions: :*, from: :foo)).to eq([[value]]) }
+        it { expect(client.select_rows { |select| select.expressions(:*).from(:foo) }).to eq([[value]]) }
       end
     end
 

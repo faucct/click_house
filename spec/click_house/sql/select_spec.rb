@@ -1,7 +1,7 @@
-RSpec.describe ClickHouse::SQL do
-  describe '.select' do
-    subject { described_class.select(expressions: :dummy, from: %i[system one]) }
+# frozen_string_literal: true
 
-    it { is_expected.to eq('SELECT dummy FROM system.one') }
-  end
+RSpec.describe ClickHouse::SQL::Select do
+  subject { described_class.call { |select| select.expressions(:dummy).from(:one, database: :system) } }
+
+  it { is_expected.to eq('SELECT dummy FROM system.one') }
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ClickHouse
   # Performs queries
   class Client
@@ -31,25 +33,27 @@ module ClickHouse
     end
 
     # @return [Enumerable<Array>]
-    def each_selected_row(**clauses)
+    def each_selected_row
       Enumerator.new do |y|
-        TSV.parse(@http_interface.get(query: SQL.select(**clauses, format: 'TabSeparatedWithNamesAndTypes')))
-           .inject(nil) do |types, row|
-          next row.map(&TYPED_PARSER_BUILDER) unless types
-          y << types.zip(row.to_a).map { |type, value| type.call(value) }
-          types
+        TSV.parse(
+          @http_interface.get(
+            query: SQL::Select.call { |select| yield(select).format('TabSeparatedWithNamesAndTypes') },
+          ),
+        ).inject(nil) do |types, row|
+          types&.tap { y << types.zip(row.to_a).map { |type, value| type.call(value) } } ||
+            row.map(&TYPED_PARSER_BUILDER)
         end
       end
     end
 
     # @return [<Array>]
-    def select_rows(**clauses)
-      each_selected_row(clauses).to_a
+    def select_rows(&block)
+      each_selected_row(&block).to_a
     end
 
     # @param rows [<<*>>]
     def insert(rows:, **options)
-      @http_interface.post(query: SQL.insert(options), body: SQL.insert_values(rows))
+      @http_interface.post(query: SQL::Insert.call(options), body: SQL::Insert.values(rows))
     end
 
     # https://clickhouse.yandex/docs/en/query_language/create/#create-database
@@ -57,8 +61,8 @@ module ClickHouse
       @http_interface.post(query: ['CREATE DATABASE', ('IF NOT EXISTS' if if_not_exists), db_name].compact.join(' '))
     end
 
-    def create_table(**clauses)
-      @http_interface.post(query: SQL.create_table(clauses))
+    def create_table(&block)
+      @http_interface.post(query: SQL::CreateTable.call(&block))
     end
   end
 end

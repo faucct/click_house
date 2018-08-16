@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ClickHouse
   # https://clickhouse.yandex/docs/en/interfaces/http_interface/
   class HTTPInterface
@@ -38,7 +40,7 @@ module ClickHouse
       @uri = URI::HTTP.build(
         **DEFAULT_URI_COMPONENTS,
         query: (URI.encode_www_form(query_hash) unless query_hash.empty?),
-        **options.slice(*URI_COMPONENT_OPTIONS)
+        **options.slice(*URI_COMPONENT_OPTIONS),
       )
     end
 

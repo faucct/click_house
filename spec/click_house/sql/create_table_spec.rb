@@ -1,16 +1,17 @@
-RSpec.describe ClickHouse::SQL do
-  describe '.create_table' do
+# frozen_string_literal: true
+
+RSpec.describe ClickHouse::SQL::CreateTable do
+  describe '.call' do
     subject do
       lambda do
-        http_interface.post query: described_class.create_table(name: :foo, columns: { bar: :String }, engine: :TinyLog)
+        http_interface.post query: (described_class.call do |create_table|
+          create_table.name(:foo).engine(&:tiny_log).columns { |columns| columns.call(:bar, :String) }
+        end)
       end
     end
     after { http_interface.post query: 'DROP TABLE foo' }
     let(:http_interface) { ClickHouse::HTTPInterface.new }
 
-    it do
-      is_expected.to change { TSV.parse(http_interface.get(query: 'SHOW TABLES')).without_header.map(&:first) }
-        .to include('foo')
-    end
+    it { is_expected.to change { http_interface.get(query: 'SHOW TABLES') }.to include('foo') }
   end
 end

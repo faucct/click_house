@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe ClickHouse::HTTPInterface do
   let(:connection) { described_class.new }
 
