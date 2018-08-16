@@ -1,0 +1,15 @@
+---
+sudo: required
+services:
+- docker
+language: ruby
+cache: bundler
+rvm:
+  - 2.3.0
+  - 2.4.1
+before_install:
+- gem install bundler -v 1.16.3
+- docker run -d -p 8123:8123 yandex/clickhouse-server
+script:
+- bundle exec rake spec
+- bundle exec rubocop --fail-level C

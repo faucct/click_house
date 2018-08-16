@@ -1,0 +1,15 @@
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*_spec.rb'
+
+Metrics/LineLength:
+  Max: 120
+
+Style/EmptyMethod:
+  EnforcedStyle: expanded
+
+Style/SignalException:
+  EnforcedStyle: semantic
+
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: comma
