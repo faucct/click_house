@@ -51,5 +51,14 @@ module ClickHouse
     def insert(rows:, **options)
       @http_interface.post(query: SQL.insert(options), body: SQL.insert_values(rows))
     end
+
+    # https://clickhouse.yandex/docs/en/query_language/create/#create-database
+    def create_database(db_name, if_not_exists: false)
+      @http_interface.post(query: ['CREATE DATABASE', ('IF NOT EXISTS' if if_not_exists), db_name].compact.join(' '))
+    end
+
+    def create_table(**clauses)
+      @http_interface.post(query: SQL.create_table(clauses))
+    end
   end
 end
