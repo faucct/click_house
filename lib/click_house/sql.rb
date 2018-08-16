@@ -1,3 +1,4 @@
+require 'click_house/sql/insert'
 require 'click_house/sql/select'
 
 module ClickHouse

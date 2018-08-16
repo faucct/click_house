@@ -46,5 +46,10 @@ module ClickHouse
     def select_rows(**clauses)
       each_selected_row(clauses).to_a
     end
+
+    # @param rows [<<*>>]
+    def insert(rows:, **options)
+      @http_interface.post(query: SQL.insert(options), body: SQL.insert_values(rows))
+    end
   end
 end
