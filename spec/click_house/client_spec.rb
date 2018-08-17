@@ -5,70 +5,62 @@ RSpec.describe ClickHouse::Client do
   let(:http_interface) { ClickHouse::HTTPInterface.new }
 
   describe '#each_selected_row' do
-    shared_context 'single value row' do |of_type:, with_value_sql:|
-      before do
-        http_interface.post query: "CREATE TABLE foo (bar #{of_type}) ENGINE = TinyLog"
-        http_interface.post query: "INSERT INTO foo VALUES (#{with_value_sql})"
-      end
-      after { http_interface.post query: 'DROP TABLE foo' }
-
-      shared_examples 'it selects' do |value:|
-        it { expect(client.select_rows { |select| select.expressions(:*).from(:foo) }).to eq([[value]]) }
-      end
+    shared_context 'selecting one' do |sql|
+      subject { client.select_rows { |select| select.expressions(sql).from(:one, database: :system) }[0][0] }
     end
 
-    context 'when there is a string containing quote' do
-      include_context 'single value row', of_type: 'String', with_value_sql: "'\\''"
+    context 'when value is a string containing quote' do
+      include_context 'selecting one', "'\\''"
 
-      it_behaves_like 'it selects', value: "'"
+      it { is_expected.to eq("'") }
     end
 
-    context 'when there is an array containing string' do
-      include_context 'single value row', of_type: 'Array(String)', with_value_sql: "['a']"
+    context 'when value is an array containing string' do
+      include_context 'selecting one', "['a']"
 
-      it_behaves_like 'it selects', value: ['a']
+      it { is_expected.to eq(['a']) }
     end
 
-    context 'when there is a null nullable string' do
-      include_context 'single value row', of_type: 'Nullable(String)', with_value_sql: 'NULL'
+    context 'when value is a null string' do
+      include_context 'selecting one', 'CAST(NULL AS Nullable(String))'
 
-      it_behaves_like 'it selects', value: nil
+      it { is_expected.to eq(nil) }
     end
 
-    context 'when there is an integer' do
-      include_context 'single value row', of_type: 'Int8', with_value_sql: '42'
+    context 'when value is nothing' do
+      include_context 'selecting one', 'NULL'
 
-      it_behaves_like 'it selects', value: 42
+      it { is_expected.to eq(nil) }
     end
 
-    context 'when there is a float' do
-      include_context 'single value row', of_type: 'Float32', with_value_sql: '0.5'
+    context 'when value is an integer' do
+      include_context 'selecting one', '42'
 
-      it_behaves_like 'it selects', value: 0.5
+      it { is_expected.to eq(42) }
     end
 
-    context 'when there is a date' do
-      include_context 'single value row', of_type: 'Date', with_value_sql: "'1994-03-14'"
+    context 'when value is a float' do
+      include_context 'selecting one', '0.5'
 
-      it_behaves_like 'it selects', value: Date.new(1994, 3, 14)
+      it { is_expected.to eq(0.5) }
     end
 
-    context 'when there is a time' do
-      include_context 'single value row', of_type: 'DateTime', with_value_sql: "'1994-03-14 12:34:56'"
+    context 'when value is a date' do
+      include_context 'selecting one', "toDate('1994-03-14')"
 
-      it_behaves_like 'it selects', value: Time.new(1994, 3, 14, 12, 34, 56)
+      it { is_expected.to eq(Date.new(1994, 3, 14)) }
     end
 
-    context 'when there is a enum' do
-      include_context 'single value row', of_type: "Enum8('hello' = 1, 'world' = 2)", with_value_sql: "'world'"
+    context 'when value is a date-time' do
+      include_context 'selecting one', "toDateTime('1994-03-14 12:34:56')"
 
-      it_behaves_like 'it selects', value: 'world'
+      it { is_expected.to eq(DateTime.new(1994, 3, 14, 12, 34, 56)) }
     end
 
-    context 'when there is a nested data structure' do
-      include_context 'single value row', of_type: 'Nested(tag String)', with_value_sql: "['foo', 'bar']"
+    context 'when value is a enum' do
+      include_context 'selecting one', "CAST('world' AS Enum8('hello' = 1, 'world' = 2))"
 
-      it_behaves_like 'it selects', value: %w[foo bar]
+      it { is_expected.to eq('world') }
     end
   end
 end

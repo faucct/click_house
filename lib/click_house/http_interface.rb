@@ -59,7 +59,8 @@ module ClickHouse
       Net::HTTP.start(@uri.host, @uri.port) do |http|
         response = http.request(request_class.new(uri_with_query(query)), body)
         fail response.body unless response.is_a?(Net::HTTPSuccess)
-        response.body
+        # https://github.com/yandex/ClickHouse/issues/2976
+        response.body.force_encoding('ASCII-8BIT')
       end
     end
   end
