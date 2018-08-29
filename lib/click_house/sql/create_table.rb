@@ -67,6 +67,14 @@ module ClickHouse
           @clause || fail('No engine selected')
         end
 
+        def distributed(cluster, remote_database, remote_table, sharding_key: nil)
+          self.class.new("Distributed(#{cluster}, #{remote_database}, #{remote_table}#{", #{sharding_key}" if sharding_key})")
+        end
+
+        def merge_tree(date_column, primary_key, index_granularity)
+          self.class.new("MergeTree(#{date_column}, (#{Array(primary_key).join(',')}), #{index_granularity})")
+        end
+
         # https://clickhouse.yandex/docs/en/operations/table_engines/replacingmergetree/
         def replacing_merge_tree(order_by:)
           self.class.new("ReplacingMergeTree ORDER BY (#{Array(order_by).join(',')})")
@@ -120,7 +128,7 @@ module ClickHouse
       # @param cluster [#to_s]
       # @see https://clickhouse.yandex/docs/en/query_language/create/#distributed-ddl-queries-on-cluster-clause
       def on_cluster(cluster)
-        self.class.new(**@clauses, cluster: "ON CLUSTER #{cluster}")
+        self.class.new(**@clauses, on_cluster: "ON CLUSTER #{cluster}")
       end
 
       # @return [CreateTable]

@@ -8,6 +8,7 @@ module ClickHouse
         distinct
         expressions
         from
+        where
         format
       ].freeze
 
@@ -48,6 +49,13 @@ module ClickHouse
       # @see https://clickhouse.yandex/docs/en/query_language/select/#format
       def format(format)
         self.class.new(**@clauses, format: "FORMAT #{format}")
+      end
+
+      # @param expression [String]
+      # @return [Select]
+      # https://clickhouse.yandex/docs/en/query_language/select/#where-clause
+      def where(expression)
+        self.class.new(**@clauses, where: expression)
       end
     end
   end

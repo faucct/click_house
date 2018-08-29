@@ -6,7 +6,11 @@ module ClickHouse
     class DSL
       # @return [String]
       def self.call(*args)
-        yield(new(*args)).to_s
+        if block_given?
+          yield(new(*args)).to_s
+        else
+          new(*args)
+        end
       end
 
       # @return [String]
