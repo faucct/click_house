@@ -58,6 +58,7 @@ module ClickHouse
       Net::HTTP.start(@uri.host, @uri.port) do |http|
         response = http.request(request_class.new(uri_with_params(options.merge(params))), body)
         fail response.body unless response.is_a?(Net::HTTPSuccess)
+
         # https://github.com/yandex/ClickHouse/issues/2976
         response.body.force_encoding('ASCII-8BIT')
       end
@@ -65,6 +66,7 @@ module ClickHouse
 
     def assert_option_keys(options, keys)
       return if (unexpected_options = options.keys - keys).empty?
+
       fail ArgumentError, "Unexpected options – #{unexpected_options.join(', ')}"
     end
   end

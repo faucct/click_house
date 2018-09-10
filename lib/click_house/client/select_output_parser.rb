@@ -41,6 +41,7 @@ module ClickHouse
 
       def self.tsv_with_names_and_types(body, **options)
         fail ArgumentError unless options.empty?
+
         Enumerator.new do |y|
           rows = TSV.parse(body)
           parsers = rows.next.map(&TYPED_PARSER_BUILDER)
