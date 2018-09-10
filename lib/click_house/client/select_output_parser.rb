@@ -42,10 +42,9 @@ module ClickHouse
       def self.tsv_with_names_and_types(body, **options)
         fail ArgumentError unless options.empty?
         Enumerator.new do |y|
-          TSV.parse(body).inject(nil) do |parsers, row|
-            y << parsers.zip(row.to_a).map { |parser, value| parser.call(value) } if parsers
-            parsers || row.map(&TYPED_PARSER_BUILDER)
-          end || fail('no types row')
+          rows = TSV.parse(body)
+          parsers = rows.next.map(&TYPED_PARSER_BUILDER)
+          loop { y << parsers.zip(rows.next.to_a).map { |parser, value| parser.call(value) } }
         end
       end
     end
