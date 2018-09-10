@@ -11,12 +11,12 @@ module ClickHouse
       end
     end
 
-    def get(**options)
-      request(Net::HTTP::Get, options)
+    def get(**options, &block)
+      request(Net::HTTP::Get, options, &block)
     end
 
-    def post(**options)
-      request(Net::HTTP::Post, options)
+    def post(**options, &block)
+      request(Net::HTTP::Post, options, &block)
     end
 
     private
@@ -56,11 +56,10 @@ module ClickHouse
     def request(request_class, body: nil, params: {}, **options)
       assert_option_keys options, %i[query]
       Net::HTTP.start(@uri.host, @uri.port) do |http|
-        response = http.request(request_class.new(uri_with_params(options.merge(params))), body)
-        fail response.body unless response.is_a?(Net::HTTPSuccess)
-
-        # https://github.com/yandex/ClickHouse/issues/2976
-        response.body.force_encoding('ASCII-8BIT')
+        http.request(request_class.new(uri_with_params(options.merge(params))), body) do |response|
+          fail response.body unless response.is_a?(Net::HTTPSuccess)
+          yield response
+        end
       end
     end
 

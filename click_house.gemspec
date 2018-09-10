@@ -37,5 +37,4 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rspec', '~> 3.0'
   spec.add_development_dependency 'rubocop'
   spec.add_runtime_dependency 'backports', '>= 3.11.0' # Hash#slice
-  spec.add_runtime_dependency 'tsv'
 end

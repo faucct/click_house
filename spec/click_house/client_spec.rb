@@ -7,7 +7,7 @@ RSpec.describe ClickHouse::Client do
   describe '#each_selected_row' do
     def select_sql_expression(sql)
       client.select_from_sql(<<-SQL, format: :tsv_with_names_and_types)[0][0]
-        SELECT #{sql} FROM system.one FORMAT TSVWithNamesAndTypes
+        SELECT #{sql} FORMAT TSVWithNamesAndTypes
       SQL
     end
 
@@ -21,6 +21,18 @@ RSpec.describe ClickHouse::Client do
       subject { select_sql_expression("['a']") }
 
       it { is_expected.to eq(['a']) }
+    end
+
+    context 'when value is an array containing string with comma' do
+      subject { select_sql_expression("[',']") }
+
+      it { is_expected.to eq([',']) }
+    end
+
+    context 'when value is an array containing string with comma' do
+      subject { select_sql_expression("['\\'']") }
+
+      it { is_expected.to eq(["'"]) }
     end
 
     context 'when value is a null string' do

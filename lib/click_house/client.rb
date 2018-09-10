@@ -11,7 +11,15 @@ module ClickHouse
     end
 
     def select_from_sql(sql, format:, **parser_options)
-      SelectOutputParser.public_send(format, @http_interface.get(query: sql), **parser_options).to_a
+      selected = nil
+      @http_interface.get(query: sql) do |response_io|
+        selected = SelectOutputParser.public_send(
+          format,
+          Enumerator.new { |y| response_io.read_body { |chunk| y << chunk } },
+          **parser_options,
+        ).to_a
+      end
+      selected
     end
   end
 end
